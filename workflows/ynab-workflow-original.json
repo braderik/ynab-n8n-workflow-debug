@@ -83,14 +83,17 @@
           "name": "Bearer Auth account 3"
         }
       }
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [[{"node": "Get All Budgets", "type": "main", "index": 0}]]
     },
-    {
-      "parameters": {
-        "fieldToSplitOut": "data.transactions",
-        "options": {}
-      },
-      "id": "87cb706a-6ad8-4975-9cd9-aa65ba52f836",
-      "name": "Split Transactions",
-      "type": "n8n-nodes-base.itemLists",
-      "typeVersion": 3,
-      "position": [1232
+    "Get All Budgets": {
+      "main": [[{"node": "Set Budget Variables", "type": "main", "index": 0}]]
+    },
+    "Set Budget Variables": {
+      "main": [[{"node": "Get Transactions Since Yesterday", "type": "main", "index": 0}]]
+    }
+  }
+}
