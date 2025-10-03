@@ -1,0 +1,259 @@
+{
+  "name": "YNAB — Transactions Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d2fc8240-59cd-4dc6-a79c-607a2ce0195d",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1312,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.ynab.com/v1/budgets",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "id": "67469d36-0f9e-4e70-972d-988863c8a5af",
+      "name": "Get All Budgets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -1088,
+        -272
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "1D7cmwD7QknnzDE8",
+          "name": "Bearer Auth account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "budget_id",
+              "stringValue": "={{ $json.data.budgets[0].id }}"
+            },
+            {
+              "name": "budget_name",
+              "stringValue": "={{ $json.data.budgets[0].name }}"
+            },
+            {
+              "name": "since_date",
+              "stringValue": "={{ $now.minus({days: 7}).toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d74ec092-c6a7-45a9-b382-595abc440c9a",
+      "name": "Set Budget Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -864,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.ynab.com/v1/budgets/{{ $('Set Budget Variables').item.json.budget_id }}/transactions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "since_date",
+              "value": "={{ $('Set Budget Variables').item.json.since_date }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "afa9a3ef-f521-4046-bc97-7d470f8ad3ac",
+      "name": "Get Transactions Since Yesterday",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -688,
+        -256
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "1D7cmwD7QknnzDE8",
+          "name": "Bearer Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.transactions",
+        "options": {}
+      },
+      "id": "b56ece8b-6d59-4bfb-baa7-27447cd229c2",
+      "name": "Split Transactions",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [
+        -384,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "transaction_id",
+              "stringValue": "={{ $json.id }}"
+            },
+            {
+              "name": "date",
+              "stringValue": "={{ $json.date }}"
+            },
+            {
+              "name": "amount",
+              "type": "numberValue",
+              "numberValue": "={{ $json.amount / 1000 }}"
+            },
+            {
+              "name": "payee_name",
+              "stringValue": "={{ $json.payee_name || 'Unknown' }}"
+            },
+            {
+              "name": "category_name",
+              "stringValue": "={{ $json.category_name || 'Uncategorized' }}"
+            },
+            {
+              "name": "cleared",
+              "stringValue": "={{ $json.cleared }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e55cd655-d215-4e74-aa75-5e22249ed455",
+      "name": "Format Transaction Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -208,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "0cc101b4-58af-4631-af36-849de1964fde",
+      "name": "Calculate Total",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -272
+      ]
+    }
+  ],
+  "pinData": {
+    "When clicking 'Test workflow'": [
+      {
+        "json": {}
+      }
+    ]
+  },
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get All Budgets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Budgets": {
+      "main": [
+        [
+          {
+            "node": "Set Budget Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Budget Variables": {
+      "main": [
+        [
+          {
+            "node": "Get Transactions Since Yesterday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Transactions Since Yesterday": {
+      "main": [
+        [
+          {
+            "node": "Split Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Transactions": {
+      "main": [
+        [
+          {
+            "node": "Format Transaction Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Transaction Data": {
+      "main": [
+        [
+          {
+            "node": "Calculate Total",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a78fd95d-8ccf-45a1-a1db-1fc378e3f231",
+  "meta": {
+    "instanceId": "43e295bf7494fc13e68f338b10bdd5dd109945cb026d90b958b635b8aa44b7d2"
+  },
+  "id": "NUoZyU7yoHHqJGxw",
+  "tags": []
+}
