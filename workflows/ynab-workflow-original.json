@@ -36,7 +36,7 @@
           "values": [
             {
               "name": "budget_id",
-              "stringValue": "=: ={{ $json.data.budgets[0].id }}\n"
+              "stringValue": "={{ $json.data.budgets[0].id }}"
             },
             {
               "name": "budget_name",
