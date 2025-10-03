@@ -36,7 +36,7 @@
           "values": [
             {
               "name": "budget_id",
-              "stringValue": "=: ={{ $json.data.budgets[0].id }}\n"
+              "stringValue": "=: ={{ $json.data.budgets[0].id }}\\n"
             },
             {
               "name": "budget_name",
@@ -44,7 +44,7 @@
             },
             {
               "name": "since_date",
-              "stringValue": "=2025-10-02 (or ={{ $now.minus({days: 1}).toFormat('yyyy-MM-dd') }})\n"
+              "stringValue": "=2025-10-02 (or ={{ $now.minus({days: 1}).toFormat('yyyy-MM-dd') }})\\n"
             }
           ]
         },
