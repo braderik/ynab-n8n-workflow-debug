@@ -1,1 +1,96 @@
-{"name":"YNAB — Transactions Workflow","nodes":[{"parameters":{},"id":"ea819a0f-297f-402a-b58a-2acc30641533","name":"When clicking 'Test workflow'","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[352,272]},{"parameters":{"url":"https://api.ynab.com/v1/budgets","authentication":"genericCredentialType","genericAuthType":"httpBearerAuth","options":{}},"id":"99c9d9a7-9244-44c1-bca8-6bf7539a2315","name":"Get All Budgets","type":"n8n-nodes-base.httpRequest","typeVersion":4,"position":[576,272],"alwaysOutputData":true,"credentials":{"httpBearerAuth":{"id":"1D7cmwD7QknnzDE8","name":"Bearer Auth account 3"}},"onError":"continueRegularOutput"},{"parameters":{"fields":{"values":[{"name":"budget_id","stringValue":"=: ={{ $json.data.budgets[0].id }}\n"},{"name":"budget_name","stringValue":"=={{ $json.data.budgets[0].name }}"},{"name":"since_date","stringValue":"=2025-10-02 (or ={{ $now.minus({days: 1}).toFormat('yyyy-MM-dd') }})\n"}]},"options":{}},"id":"dc748c40-6403-4d0d-a9fb-2e2b4e744b0c","name":"Set Budget Variables","type":"n8n-nodes-base.set","typeVersion":3,"position":[800,272]},{"parameters":{"url":"=https://api.ynab.com/v1/budgets/{{ $json.budget_id }}/transactions","authentication":"genericCredentialType","genericAuthType":"httpBearerAuth","sendQuery":true,"queryParameters":{"parameters":[{"name":"since_date","value":"={{ $now.minus({days: 7}).toFormat('yyyy-MM-dd') }}"}]},"options":{}},"id":"d107ba0f-29a1-4920-9e7a-be09f3a25d33","name":"Get Transactions Since Yesterday","type":"n8n-nodes-base.httpRequest","typeVersion":4,"position":[976,288],"retryOnFail":false,"alwaysOutputData":false,"credentials":{"httpBearerAuth":{"id":"1D7cmwD7QknnzDE8","name":"Bearer Auth account 3"}}}],"connections":{"When clicking 'Test workflow'":{"main":[[{"node":"Get All Budgets","type":"main","index":0}]]},"Get All Budgets":{"main":[[{"node":"Set Budget Variables","type":"main","index":0}]]},"Set Budget Variables":{"main":[[{"node":"Get Transactions Since Yesterday","type":"main","index":0}]]}},"active":false,"settings":{"executionOrder":"v1"}}
+{
+  "name": "YNAB — Transactions Workflow (ORIGINAL - WITH BUG)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ea819a0f-297f-402a-b58a-2acc30641533",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [352, 272]
+    },
+    {
+      "parameters": {
+        "url": "https://api.ynab.com/v1/budgets",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {}
+      },
+      "id": "99c9d9a7-9244-44c1-bca8-6bf7539a2315",
+      "name": "Get All Budgets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [576, 272],
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "1D7cmwD7QknnzDE8",
+          "name": "Bearer Auth account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "budget_id",
+              "stringValue": "=: ={{ $json.data.budgets[0].id }}\n"
+            },
+            {
+              "name": "budget_name",
+              "stringValue": "={{ $json.data.budgets[0].name }}"
+            },
+            {
+              "name": "since_date",
+              "stringValue": "=2025-10-02 (or ={{ $now.minus({days: 1}).toFormat('yyyy-MM-dd') }})\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dc748c40-6403-4d0d-a9fb-2e2b4e744b0c",
+      "name": "Set Budget Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [800, 272]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.ynab.com/v1/budgets/{{ $json.budget_id }}/transactions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "since_date",
+              "value": "={{ $now.minus({days: 7}).toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d107ba0f-29a1-4920-9e7a-be09f3a25d33",
+      "name": "Get Transactions Since Yesterday",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [976, 288],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "1D7cmwD7QknnzDE8",
+          "name": "Bearer Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.transactions",
+        "options": {}
+      },
+      "id": "87cb706a-6ad8-4975-9cd9-aa65ba52f836",
+      "name": "Split Transactions",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [1232
